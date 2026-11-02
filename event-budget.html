@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ថវិកាកម្មវិធី</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;700&family=Moul&display=swap">
+<style>
+/* Layout: lock screen first, then one narrow column — event list as home, a ledger per event with a dollar summary band */
+:root{
+  --bg:#fbf7f4; --surface:#ffffff; --fg:#2a1a22; --muted:#7a6670; --line:#eaded8;
+  --accent:#7d1f3d; --gold:#b8862b; --good:#2f7a4b; --chip:#f4e9e4; --bad:#b3261e;
+  --display:"Moul","Kantumruy Pro",serif; --body:"Kantumruy Pro",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1a1216; --surface:#241a1f; --fg:#f3e9ec; --muted:#b39fa8; --line:#3a2b32;
+  --accent:#e0809f; --gold:#e3b75e; --good:#6cc38f; --chip:#33252c; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1216; --surface:#241a1f; --fg:#f3e9ec; --muted:#b39fa8; --line:#3a2b32;
+  --accent:#e0809f; --gold:#e3b75e; --good:#6cc38f; --chip:#33252c; --bad:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+img{max-width:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
+.wrap{max-width:680px;margin:0 auto;display:grid;gap:18px}
+h1{font-family:var(--display);font-weight:400;font-size:1.3rem;color:var(--accent);margin:0;text-wrap:balance}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+select,input,button{font:inherit;color:inherit}
+input[type=text],input[type=number],input[type=tel],input[type=password]{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:0}
+button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px}
+button.pri{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+button.link{border:none;background:none;color:var(--accent);padding:4px 0;text-decoration:underline}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.lbl{font-size:.8rem;color:var(--muted)}
+.note{font-size:.82rem;color:var(--muted);margin:0}
+.err{color:var(--bad);font-size:.88rem;margin:0;min-height:1.4em}
+/* lock */
+.lock{max-width:360px;margin:8vh auto 0;display:grid;gap:14px;text-align:center}
+.lock form{display:grid;gap:10px;text-align:left}
+.lock label{display:grid;gap:4px;font-size:.88rem;color:var(--muted)}
+.lock input{font-size:1.1rem;padding:10px 12px;letter-spacing:.08em}
+.lock button.pri{padding:10px}
+.seal{width:64px;height:64px;margin:0 auto;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-family:var(--display);font-size:1.4rem}
+/* home list */
+.evlist{display:grid;gap:10px}
+.evcard{display:grid;grid-template-columns:1fr auto;gap:4px 12px;text-align:left;padding:14px 16px;border-radius:12px;background:var(--surface)}
+.evcard b{font-size:1.05rem}
+.evcard .amt{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);text-align:right}
+.evcard .sub{font-size:.8rem;color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:20px;text-align:center;color:var(--muted);display:grid;gap:10px;justify-items:center}
+/* event summary */
+.sum{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
+.big{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1.2}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two b{font-variant-numeric:tabular-nums;font-size:1.05rem}
+.bar{height:8px;background:var(--chip);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
+.rate{display:flex;gap:6px;align-items:center;font-size:.85rem;color:var(--muted)}
+.rate input{width:90px;text-align:right}
+.evname{font-size:1.15rem;font-weight:700;width:100%}
+/* ledger */
+.cat{display:grid;gap:2px}
+.cathead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:2px solid var(--gold);padding-bottom:4px}
+.cathead input{font-weight:700;border-color:transparent;background:transparent;padding:2px 0;flex:1}
+.cathead span{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.item{display:grid;grid-template-columns:26px 1fr 26px;gap:2px 6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.item .nm{border-color:transparent;background:transparent;padding:2px 4px}
+.item.done .nm{text-decoration:line-through;color:var(--muted)}
+.item input[type=checkbox]{width:20px;height:20px;accent-color:var(--good)}
+.line2{grid-column:2/4;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.9rem;color:var(--muted)}
+.line2 input{width:60px;text-align:right;padding:3px 6px}
+.line2 .pr{width:96px}
+.cur{min-width:40px;padding:3px 8px;font-weight:700;background:var(--chip);border-color:transparent}
+.cur.khr{color:var(--gold)}
+.line2 .st{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--fg)}
+.del{border:none;background:none;color:var(--muted);padding:0;font-size:1.2rem;line-height:1}
+.add{justify-self:start;border-style:dashed;color:var(--accent);margin-top:6px}
+/* picker */
+.picker{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--chip);border:1px solid transparent;border-radius:99px;padding:4px 12px;font-size:.9rem}
+.chip.on{border-color:var(--good);color:var(--good)}
+.chip.on::before{content:"✓ "}
+.edrow{display:flex;gap:6px;align-items:center}
+.edrow input{flex:1}
+.confirm{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.9rem;background:var(--chip);padding:10px 12px;border-radius:10px}
+.status{font-size:.78rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<section id="lock" class="lock">
+  <div class="seal">៛</div>
+  <h1>ថវិកាកម្មវិធី</h1>
+  <p class="note" id="lockLoading">កំពុងភ្ជាប់…</p>
+
+  <form id="fLogin" hidden>
+    <label>លេខទូរស័ព្ទ<input type="tel" id="liPhone" inputmode="tel" autocomplete="tel" placeholder="012 345 678" required></label>
+    <label>លេខកូដ<input type="password" id="liPin" inputmode="numeric" maxlength="6" autocomplete="current-password" required></label>
+    <p class="err" id="liErr"></p>
+    <button class="pri" type="submit">ចូល</button>
+    <div class="row between"><button class="link" type="button" id="toRegister">ចុះឈ្មោះថ្មី</button><button class="link" type="button" id="toForgot">ភ្លេចលេខកូដ?</button></div>
+  </form>
+
+  <form id="fPhone" hidden>
+    <p class="note" id="phTitle"></p>
+    <label>លេខទូរស័ព្ទ<input type="tel" id="phPhone" inputmode="tel" autocomplete="tel" placeholder="012 345 678" required></label>
+    <label id="phCodeBox" hidden>លេខកូដ SMS (៦ ខ្ទង់)<input type="text" id="phCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+    <p class="err" id="phErr"></p>
+    <button class="pri" type="submit" id="phBtn">ផ្ញើលេខកូដ SMS</button>
+    <button class="link" type="button" id="phBack">‹ ត្រឡប់ទៅចូល</button>
+    <div id="recaptcha"></div>
+  </form>
+
+  <form id="fPin" hidden>
+    <p class="note">កំណត់លេខកូដសម្រាប់ចូលកម្មវិធី</p>
+    <label>លេខកូដ (៤–៦ ខ្ទង់)<input type="password" id="pnPin" inputmode="numeric" maxlength="6" autocomplete="new-password" required></label>
+    <label>បញ្ជាក់លេខកូដម្តងទៀត<input type="password" id="pnPin2" inputmode="numeric" maxlength="6" autocomplete="new-password" required></label>
+    <p class="err" id="pnErr"></p>
+    <button class="pri" type="submit">រក្សាទុក និងចូល</button>
+  </form>
+</section>
+
+<div class="wrap" id="app" hidden>
+  <!-- HOME -->
+  <section id="home" class="wrap" style="gap:14px">
+    <div class="row between"><h1>ថវិកាកម្មវិធី</h1><button id="logout">ចាកចេញ</button></div>
+    <div class="evlist" id="evlist"></div>
+    <div class="row">
+      <button class="pri" id="newWed">+ មង្គលការ (មានផ្នែកស្រាប់)</button>
+      <button id="newBlank">+ កម្មវិធីទទេ</button>
+    </div>
+    <p class="note" id="storeNote"></p>
+  </section>
+
+  <!-- EVENT -->
+  <section id="event" class="wrap" hidden>
+    <div class="row between">
+      <button id="back">‹ កម្មវិធីទាំងអស់</button>
+      <span class="status" id="st"></span>
+    </div>
+    <input type="text" class="evname" id="evName" aria-label="ឈ្មោះកម្មវិធី">
+    <div class="sum">
+      <div><div class="lbl">ចំណាយសរុប (គិតជាដុល្លារ)</div><div class="big" id="tot">$0</div></div>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="two">
+        <div><div class="lbl">✓ ទិញរួច</div><b id="paid">$0</b></div>
+        <div><div class="lbl">នៅសល់ត្រូវទិញ</div><b id="left">$0</b></div>
+      </div>
+      <label class="rate" for="rate">អត្រា $1 = <input type="number" id="rate" min="1" inputmode="decimal"> ៛</label>
+    </div>
+    <p class="note">ចុច «+ រើសមុខទំនិញ» ក្នុងផ្នែកនីមួយៗ ដើម្បីរើសពីបញ្ជីស្រាប់ ឬបន្ថែម/កែ/លុបមុខទំនិញ។ ចុច <b>$</b> / <b>៛</b> ដើម្បីប្តូររូបិយប័ណ្ណ។</p>
+    <div id="cats" class="wrap"></div>
+    <div class="row">
+      <input type="text" id="newCat" placeholder="បន្ថែមផ្នែកថ្មី" list="catNames">
+      <button id="addCat">+ ផ្នែក</button>
+    </div>
+    <datalist id="catNames"></datalist>
+    <div class="row">
+      <button class="pri" id="print">🖨 ព្រីន</button>
+      <button id="copy">ចម្លងសង្ខេប</button>
+      <button id="delEv">លុបកម្មវិធី</button>
+    </div>
+    <div class="confirm" id="delConfirm" hidden>
+      <span>លុបកម្មវិធីនេះជារៀងរហូតមែនទេ?</span>
+      <button class="pri" id="delYes">លុប</button><button id="delNo">ទេ</button>
+    </div>
+    <p class="note" id="msg"></p>
+  </section>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,setPersistence,browserSessionPersistence,onAuthStateChanged,signInWithEmailAndPassword,signInWithPhoneNumber,
+  RecaptchaVerifier,EmailAuthProvider,linkWithCredential,updatePassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {initializeFirestore,persistentLocalCache,collection,doc,setDoc,getDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyAe7nz1rzhNjfWOSqe6P0lQgj8S0D5kGF4",
+  authDomain:"event-budget-4f2c9.firebaseapp.com",
+  projectId:"event-budget-4f2c9",
+  storageBucket:"event-budget-4f2c9.firebasestorage.app",
+  messagingSenderId:"371182195104",
+  appId:"1:371182195104:web:784f2dfa1deb842ad2d4c5"
+};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app); auth.languageCode="km";
+const fs=initializeFirestore(app,{localCache:persistentLocalCache()});
+
+
+const DEFLIB={
+ "ពិធីសាសនា / សែនព្រេន":["ធូប","ទៀន","ផ្កាម្លិះ","ផ្កាឈូក","ស្លាធម៌","បាយសី","ពានស្លា","ទេយ្យទាន","ចង្ហាន់ព្រះសង្ឃ","បច្ច័យ","ទឹកអប់","កន្សែងស"],
+ "ជំនូន":["ចេក","ក្រូច","ទំពាំងបាយជូរ","ផ្លែប៉ោម","ស្រកានាគ","នំអន្សម","នំគម","នំកន្សែង","ស្លាម្លូ","ស្រា","ភេសជ្ជៈ","មាន់","ជ្រូកខ្វៃ","ថាស ពាន","ក្រណាត់គ្របថាស"],
+ "ពិធីចងដៃ":["អំបោះក្រហម","ខ្សែចងដៃ","ពពិល","ទៀនពពិល","ផ្កាស្លាបាច","ចិញ្ចៀន","គ្រឿងអលង្ការ"],
+ "សម្លៀកបំពាក់ និងតុបតែង":["សម្លៀកបំពាក់កូនកំលោះ","សម្លៀកបំពាក់កូនក្រមុំ","ជួលសម្លៀកបំពាក់","តុបតែងមុខ","តុបតែងរោង","ផ្កាតុបតែង","ស្រោមអាំងប៉ាវ","ធៀបការ"],
+ "ទទួលភ្ញៀវ":["អាហារ (តុ)","ភេសជ្ជៈ","ទឹកសុទ្ធ","ទឹកកក","ស្រាបៀរ","កាដូអរគុណភ្ញៀវ","ជួលតុ កៅអី","ជួលរោង","ភ្លេង តន្ត្រី","ថតរូប វីដេអូ","ពិធីករ"],
+ "ចំណាយទូទៅ":["ដឹកជញ្ជូន","សាំង","ទឹក ភ្លើង","ផ្សេងៗ"]
+};
+const WEDCATS=["ពិធីសាសនា / សែនព្រេន","ជំនូន","ពិធីចងដៃ","សម្លៀកបំពាក់ និងតុបតែង","ទទួលភ្ញៀវ"];
+const blankItem=(n="")=>({n,q:1,p:0,c:"usd",d:false});
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const usd=v=>"$"+(Math.round(v*100)/100).toLocaleString("en-US",{maximumFractionDigits:2});
+const khr=v=>Math.round(v).toLocaleString("en-US")+" ៛";
+const toUsd=(i,rate)=>{const v=(+i.q||0)*(+i.p||0);return i.c==="khr"?v/(+rate||4100):v};
+function totals(e){let t=0,p=0;e.cats.forEach(c=>c.items.forEach(i=>{const v=toUsd(i,e.rate);t+=v;if(i.d)p+=v}));return{t,p}}
+
+/* ---------- storage (Firestore: users/{uid}/...) ---------- */
+let uid=null, events={}, lib=null, cur=null, dirty=false, saveT=null, saving=false, openPicker=null, editLib=false, unsub=null;
+function setStatus(t){$("st").textContent=t}
+function queueSave(){dirty=true;setStatus("កំពុងរក្សាទុក…");clearTimeout(saveT);saveT=setTimeout(flush,700)}
+async function flush(){
+  if(!cur||!events[cur]||!uid)return;
+  const e=events[cur];e.updated=Date.now();
+  if(saving){saveT=setTimeout(flush,400);return}
+  saving=true;
+  try{await setDoc(doc(fs,"users",uid,"events",cur),JSON.parse(JSON.stringify(e)));dirty=false;setStatus("✓ បានរក្សាទុក")}
+  catch(err){setStatus("រក្សាទុកមិនបាន — សូមពិនិត្យអ៊ីនធឺណិត")}
+  saving=false;
+}
+let libSaving=Promise.resolve();
+function saveLib(){const snap=JSON.parse(JSON.stringify(lib));
+  libSaving=libSaving.then(()=>setDoc(doc(fs,"users",uid,"settings","library"),{cats:snap})).catch(()=>{})}
+const libFor=n=>lib[n]||(lib[n]=[]);
+
+/* ---------- auth (Firebase) ---------- */
+function e164(s){let d=String(s||"").replace(/\D/g,"");if(d.startsWith("855"))d=d.slice(3);d=d.replace(/^0+/,"");return d.length>=8?"+855"+d:null}
+const mailOf=p=>p.slice(1)+"@event-budget.app";
+const pwOf=pin=>"eb#"+pin+"#pin";
+const pinOk=p=>/^\d{4,6}$/.test(p);
+let phoneMode="register", confirmRes=null, settingPin=false, verifier=null;
+function showForm(id){["fLogin","fPhone","fPin"].forEach(f=>$(f).hidden=f!==id);$("lockLoading").hidden=true;
+  const first=$(id).querySelector("input:not([disabled])");setTimeout(()=>first&&first.focus(),50)}
+function errKm(e){const c=e&&e.code||"";
+  if(/invalid-credential|wrong-password|user-not-found|invalid-email/.test(c))return "លេខទូរស័ព្ទ ឬលេខកូដមិនត្រឹមត្រូវ";
+  if(/too-many-requests/.test(c))return "ព្យាយាមច្រើនដងពេក — សូមរង់ចាំបន្តិចសិន";
+  if(/invalid-verification-code|code-expired/.test(c))return "លេខកូដ SMS មិនត្រឹមត្រូវ ឬផុតកំណត់";
+  if(/invalid-phone-number/.test(c))return "លេខទូរស័ព្ទមិនត្រឹមត្រូវ";
+  if(/billing-not-enabled|operation-not-allowed|quota-exceeded/.test(c))return "ការផ្ញើ SMS មិនទាន់បើកក្នុង Firebase ("+c+")";
+  if(/network/.test(c))return "គ្មានអ៊ីនធឺណិត";
+  return "មានបញ្ហា ("+(c||e.message)+")"}
+function openPhone(mode){phoneMode=mode;confirmRes=null;
+  $("phTitle").textContent=mode==="register"?"ចុះឈ្មោះ — យើងនឹងផ្ញើលេខកូដ SMS ទៅលេខទូរស័ព្ទរបស់អ្នក":"ភ្លេចលេខកូដ — បញ្ចូលលេខទូរស័ព្ទដែលបានចុះឈ្មោះ ដើម្បីទទួល SMS";
+  $("phPhone").disabled=false;$("phCodeBox").hidden=true;$("phCode").value="";$("phErr").textContent="";$("phBtn").textContent="ផ្ញើលេខកូដ SMS";
+  $("phPhone").value=$("liPhone").value;showForm("fPhone")}
+$("toRegister").onclick=()=>openPhone("register");
+$("toForgot").onclick=()=>openPhone("forgot");
+$("phBack").onclick=()=>{settingPin=false;showForm("fLogin")};
+$("fLogin").onsubmit=async ev=>{ev.preventDefault();const ph=e164($("liPhone").value),pin=$("liPin").value;
+  if(!ph)return $("liErr").textContent="លេខទូរស័ព្ទមិនត្រឹមត្រូវ";
+  if(!pinOk(pin))return $("liErr").textContent="លេខកូដត្រូវមាន ៤ ដល់ ៦ ខ្ទង់";
+  $("liErr").textContent="កំពុងចូល…";
+  try{await signInWithEmailAndPassword(auth,mailOf(ph),pwOf(pin));$("liErr").textContent=""}
+  catch(e){$("liPin").value="";$("liErr").textContent=errKm(e)}};
+$("fPhone").onsubmit=async ev=>{ev.preventDefault();$("phErr").textContent="";
+  if(!confirmRes){const ph=e164($("phPhone").value);if(!ph)return $("phErr").textContent="លេខទូរស័ព្ទមិនត្រឹមត្រូវ";
+    try{if(!verifier)verifier=new RecaptchaVerifier(auth,"recaptcha",{size:"invisible"});
+      $("phBtn").disabled=true;$("phErr").textContent="កំពុងផ្ញើ…";
+      confirmRes=await signInWithPhoneNumber(auth,ph,verifier);
+      $("phErr").textContent="";$("phPhone").disabled=true;$("phCodeBox").hidden=false;$("phBtn").textContent="បញ្ជាក់";$("phCode").focus()}
+    catch(e){$("phErr").textContent=errKm(e);try{verifier&&verifier.clear()}catch(_){};verifier=null}
+    $("phBtn").disabled=false;return}
+  const code=$("phCode").value.trim();if(!/^\d{6}$/.test(code))return $("phErr").textContent="សូមបញ្ចូលលេខកូដ SMS ៦ ខ្ទង់";
+  settingPin=true;
+  try{await confirmRes.confirm(code);$("pnPin").value="";$("pnPin2").value="";$("pnErr").textContent="";showForm("fPin")}
+  catch(e){settingPin=false;$("phErr").textContent=errKm(e)}};
+$("fPin").onsubmit=async ev=>{ev.preventDefault();const a=$("pnPin").value,b=$("pnPin2").value,u=auth.currentUser;
+  if(!pinOk(a))return $("pnErr").textContent="លេខកូដត្រូវមាន ៤ ដល់ ៦ ខ្ទង់ (លេខសុទ្ធ)";
+  if(a!==b)return $("pnErr").textContent="លេខកូដទាំងពីរមិនដូចគ្នា";
+  if(!u||!u.phoneNumber)return showForm("fLogin");
+  try{const hasPw=u.providerData.some(p=>p.providerId==="password");
+    if(hasPw)await updatePassword(u,pwOf(a));
+    else await linkWithCredential(u,EmailAuthProvider.credential(mailOf(u.phoneNumber),pwOf(a)));
+    settingPin=false;enterApp(u)}
+  catch(e){$("pnErr").textContent=errKm(e)}};
+$("logout").onclick=()=>signOut(auth);
+
+function enterApp(u){if(uid===u.uid&&!$("app").hidden)return;uid=u.uid;$("lock").hidden=true;$("app").hidden=false;startData()}
+function leaveApp(){if(unsub){unsub();unsub=null}uid=null;events={};cur=null;
+  $("app").hidden=true;$("lock").hidden=false;$("liPin").value="";$("liErr").textContent="";showForm("fLogin")}
+
+/* ---------- home ---------- */
+function renderHome(){
+  const ids=Object.keys(events).sort((a,b)=>(events[b].updated||0)-(events[a].updated||0));
+  const L=$("evlist");
+  if(!ids.length){L.innerHTML=`<div class="empty"><span>មិនទាន់មានកម្មវិធីទេ</span><span class="note">ចុច «+ មង្គលការ» ឬ «+ កម្មវិធីទទេ» ខាងក្រោម ដើម្បីចាប់ផ្តើម</span></div>`;return}
+  L.innerHTML="";
+  ids.forEach(id=>{const e=events[id],{t,p}=totals(e),n=e.cats.reduce((a,c)=>a+c.items.length,0);
+    const b=document.createElement("button");b.className="evcard";
+    b.innerHTML=`<b>${esc(e.name)||"គ្មានឈ្មោះ"}</b><span class="amt">${usd(t)}</span>
+      <span class="sub">${n} មុខ · ទិញរួច ${usd(p)}</span><span class="sub">${e.updated?new Date(e.updated).toLocaleDateString("en-GB"):""}</span>`;
+    b.onclick=()=>open(id);L.appendChild(b)});
+}
+function show(view){$("home").hidden=view!=="home";$("event").hidden=view!=="event";window.scrollTo(0,0)}
+function open(id){cur=id;openPicker=null;editLib=false;$("delConfirm").hidden=true;$("msg").textContent="";renderEvent();show("event")}
+function create(wed){
+  const id="e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  events[id]=wed?{name:"មង្គលការ",rate:4100,cats:WEDCATS.map(n=>({n,items:[]}))}
+               :{name:"កម្មវិធីថ្មី",rate:4100,cats:[{n:"ចំណាយទូទៅ",items:[]}]};
+  cur=id;queueSave();open(id);openPicker=0;renderEvent();
+}
+
+/* ---------- event ---------- */
+function updSum(){
+  const e=events[cur],{t,p}=totals(e);
+  $("tot").textContent=usd(t);$("paid").textContent=usd(p);$("left").textContent=usd(t-p);
+  $("barFill").style.width=(t?p/t*100:0)+"%";
+  document.querySelectorAll("#cats .cathead span").forEach((s,ci)=>s.textContent=usd(e.cats[ci].items.reduce((a,i)=>a+toUsd(i,e.rate),0)));
+  document.querySelectorAll("#cats .st").forEach(s=>{const [ci,ii]=s.dataset.k.split("_");const i=e.cats[ci].items[ii];
+    const v=(+i.q||0)*(+i.p||0);s.textContent=i.c==="khr"?khr(v):usd(v)});
+}
+function picker(c,ci){
+  const box=document.createElement("div");box.className="picker";
+  const L=libFor(c.n), have=new Set(c.items.map(i=>i.n));
+  if(!editLib){
+    box.innerHTML=`<div class="row between"><span class="lbl">ចុចរើសមុខទំនិញ (រើសបានច្រើន)</span><button class="link" data-a="edit">កែ / លុបបញ្ជី</button></div>
+      <div class="chips">${L.length?L.map((n,k)=>`<button class="chip${have.has(n)?" on":""}" data-k="${k}">${esc(n)}</button>`).join(""):`<span class="note">មិនទាន់មានមុខទំនិញក្នុងបញ្ជីផ្នែកនេះ — បន្ថែមខាងក្រោម</span>`}</div>`;
+    box.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{const n=L[ch.dataset.k];
+      const ix=c.items.findIndex(i=>i.n===n);
+      if(ix>=0){if(!(+c.items[ix].p)&&!c.items[ix].d)c.items.splice(ix,1);else return $("msg").textContent=`«${n}» មានតម្លៃរួចហើយ — លុបវាដោយចុច × នៅលើជួរ`}
+      else c.items.push(blankItem(n));
+      renderEvent();queueSave()});
+  }else{
+    box.innerHTML=`<div class="row between"><span class="lbl">កែឈ្មោះ ឬលុបមុខទំនិញពីបញ្ជីផ្នែកនេះ</span><button class="pri" data-a="done">រួចរាល់</button></div>
+      ${L.map((n,k)=>`<div class="edrow"><input type="text" id="lib${ci}_${k}" value="${esc(n)}" aria-label="ឈ្មោះមុខទំនិញ"><button class="del" data-k="${k}" aria-label="លុបពីបញ្ជី">×</button></div>`).join("")||`<span class="note">បញ្ជីទទេ</span>`}`;
+    box.querySelectorAll(".edrow input").forEach((inp,k)=>inp.onchange=()=>{const v=inp.value.trim(),old=L[k];if(!v||v===old)return;
+      L[k]=v;c.items.forEach(i=>{if(i.n===old)i.n=v});saveLib();renderEvent();queueSave()});
+    box.querySelectorAll(".del").forEach(b=>b.onclick=()=>{L.splice(+b.dataset.k,1);saveLib();renderEvent()});
+  }
+  const addRow=document.createElement("div");addRow.className="row";
+  addRow.innerHTML=`<input type="text" id="newItem${ci}" placeholder="មុខទំនិញថ្មី" style="flex:1"><button data-a="add">+ បន្ថែម</button>`;
+  box.appendChild(addRow);
+  const inp=addRow.querySelector("input"),add=()=>{const v=inp.value.trim();if(!v)return;
+    if(!L.includes(v)){L.push(v);saveLib()}
+    if(!editLib&&!c.items.some(i=>i.n===v))c.items.push(blankItem(v));
+    renderEvent();queueSave();setTimeout(()=>$("newItem"+ci)&&$("newItem"+ci).focus(),0)};
+  addRow.querySelector("button").onclick=add;inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();add()}};
+  const ed=box.querySelector('[data-a="edit"]');if(ed)ed.onclick=()=>{editLib=true;renderEvent()};
+  const dn=box.querySelector('[data-a="done"]');if(dn)dn.onclick=()=>{editLib=false;renderEvent()};
+  const close=document.createElement("button");close.className="link";close.textContent="បិទ";close.style.justifySelf="start";
+  close.onclick=()=>{openPicker=null;editLib=false;renderEvent()};box.appendChild(close);
+  return box;
+}
+function renderEvent(){
+  const e=events[cur];if(!e)return;
+  if(document.activeElement!==$("evName"))$("evName").value=e.name;
+  if(document.activeElement!==$("rate"))$("rate").value=e.rate;
+  $("catNames").innerHTML=Object.keys(lib).map(n=>`<option value="${esc(n)}">`).join("");
+  const y=window.scrollY,box=$("cats");box.innerHTML="";
+  e.cats.forEach((c,ci)=>{
+    const d=document.createElement("section");d.className="cat";
+    d.innerHTML=`<div class="cathead"><input type="text" id="c${ci}" value="${esc(c.n)}" aria-label="ឈ្មោះផ្នែក"><span></span></div>`;
+    d.querySelector("input").onchange=ev=>{const v=ev.target.value.trim()||c.n;if(v!==c.n&&!lib[v]){lib[v]=libFor(c.n).slice();saveLib()}c.n=v;renderEvent();queueSave()};
+    const dl=document.createElement("datalist");dl.id="dl"+ci;dl.innerHTML=libFor(c.n).map(n=>`<option value="${esc(n)}">`).join("");d.appendChild(dl);
+    c.items.forEach((it,ii)=>{
+      const r=document.createElement("div");r.className="item"+(it.d?" done":"");
+      r.innerHTML=`<input type="checkbox" id="d${ci}_${ii}" aria-label="ទិញរួច"${it.d?" checked":""}>
+        <input type="text" class="nm" id="n${ci}_${ii}" list="dl${ci}" value="${esc(it.n)}" placeholder="មុខទំនិញ" aria-label="មុខទំនិញ">
+        <button class="del" aria-label="លុបមុខនេះ">×</button>
+        <div class="line2"><input type="number" id="q${ci}_${ii}" min="0" step="any" inputmode="decimal" value="${it.q}" aria-label="ចំនួន">
+        <span>×</span><input type="number" class="pr" id="p${ci}_${ii}" min="0" step="any" inputmode="decimal" value="${it.p||""}" placeholder="តម្លៃ" aria-label="តម្លៃមួយ">
+        <button class="cur ${it.c}" aria-label="ប្តូររូបិយប័ណ្ណ">${it.c==="khr"?"៛":"$"}</button>
+        <span class="st" data-k="${ci}_${ii}"></span></div>`;
+      const [cb,nm,del,l2]=r.children,[q,,p,cu]=l2.children;
+      cb.onchange=()=>{it.d=cb.checked;r.classList.toggle("done",it.d);updSum();queueSave()};
+      nm.oninput=()=>{it.n=nm.value;queueSave()};
+      nm.onchange=()=>{const v=nm.value.trim();if(v&&!libFor(c.n).includes(v)){libFor(c.n).push(v);saveLib()}};
+      q.oninput=()=>{it.q=q.value;updSum();queueSave()};
+      p.oninput=()=>{it.p=p.value;updSum();queueSave()};
+      cu.onclick=()=>{it.c=it.c==="khr"?"usd":"khr";cu.textContent=it.c==="khr"?"៛":"$";cu.className="cur "+it.c;updSum();queueSave()};
+      del.onclick=()=>{c.items.splice(ii,1);renderEvent();queueSave()};
+      d.appendChild(r);
+    });
+    if(openPicker===ci)d.appendChild(picker(c,ci));
+    else{const a=document.createElement("button");a.className="add";a.textContent="+ រើសមុខទំនិញ";
+      a.onclick=()=>{openPicker=ci;editLib=false;renderEvent()};d.appendChild(a)}
+    const rm=document.createElement("button");rm.className="link";rm.style.cssText="justify-self:end;font-size:.8rem;color:var(--muted)";
+    rm.textContent="លុបផ្នែកនេះ";rm.onclick=()=>{if(c.items.length&&rm.dataset.sure!=="1"){rm.dataset.sure="1";rm.textContent="ចុចម្តងទៀតដើម្បីលុបផ្នែក និងមុខទំនិញទាំងអស់";return}
+      e.cats.splice(ci,1);openPicker=null;renderEvent();queueSave()};
+    d.appendChild(rm);
+    box.appendChild(d);
+  });
+  updSum();window.scrollTo(0,y);
+}
+$("evName").oninput=ev=>{events[cur].name=ev.target.value;queueSave()};
+$("rate").oninput=ev=>{events[cur].rate=+ev.target.value||4100;updSum();queueSave()};
+$("addCat").onclick=()=>{const n=$("newCat").value.trim();if(!n)return;const e=events[cur];e.cats.push({n,items:[]});libFor(n);
+  $("newCat").value="";openPicker=e.cats.length-1;editLib=false;renderEvent();queueSave()};
+$("back").onclick=async()=>{clearTimeout(saveT);if(dirty)await flush();renderHome();show("home")};
+$("newWed").onclick=()=>create(true);
+$("newBlank").onclick=()=>create(false);
+$("delEv").onclick=()=>{$("delConfirm").hidden=false};
+$("delNo").onclick=()=>{$("delConfirm").hidden=true};
+$("delYes").onclick=async()=>{const id=cur;clearTimeout(saveT);dirty=false;delete events[id];cur=null;
+  try{await deleteDoc(doc(fs,"users",uid,"events",id))}catch(e){}
+  renderHome();show("home")};
+
+function summaryText(e){const {t,p}=totals(e);let s=`${e.name}\n`;
+  e.cats.forEach(c=>{const its=c.items.filter(i=>i.n);if(!its.length)return;s+=`\n${c.n}\n`;
+    its.forEach(i=>{const v=(+i.q||0)*(+i.p||0);s+=`${i.d?"✓":"•"} ${i.n} ×${i.q} = ${i.c==="khr"?khr(v):usd(v)}\n`})});
+  return s+`\nសរុប: ${usd(t)}\nទិញរួច: ${usd(p)}\nនៅសល់: ${usd(t-p)}\n(អត្រា $1 = ${e.rate} ៛)`}
+$("copy").onclick=()=>{navigator.clipboard.writeText(summaryText(events[cur]))
+  .then(()=>$("msg").textContent="បានចម្លងរួច — អាចបិទភ្ជាប់ក្នុង Telegram បាន។")
+  .catch(()=>$("msg").textContent="ចម្លងមិនបាន សូមព្យាយាមម្តងទៀត។")};
+
+function printDoc(e){const {t,p}=totals(e);
+  const rows=e.cats.map(c=>{const its=c.items.filter(i=>i.n||+i.p);if(!its.length)return"";
+    const sub=its.reduce((a,i)=>a+toUsd(i,e.rate),0);
+    return `<tr class="h"><td colspan="5">${esc(c.n)}</td><td>${usd(sub)}</td></tr>`+its.map((i,k)=>{const v=(+i.q||0)*(+i.p||0);
+      return `<tr><td>${k+1}</td><td>${esc(i.n)}</td><td>${esc(i.q)}</td><td>${i.c==="khr"?khr(+i.p||0):usd(+i.p||0)}</td><td>${i.c==="khr"?khr(v):usd(v)}</td><td>${i.d?"✓":""}</td></tr>`}).join("")}).join("");
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(e.name)}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&family=Moul&display=swap">
+<style>body{font-family:"Kantumruy Pro",sans-serif;color:#222;max-width:760px;margin:24px auto;padding:0 16px}h1{font-family:Moul,serif;font-weight:400;color:#7d1f3d;font-size:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{border:1px solid #ccc;padding:5px 7px;text-align:left}th{background:#f4e9e4}
+td:nth-child(n+3){text-align:right;white-space:nowrap}tr.h td{background:#faf3ee;font-weight:700}tr.h td:last-child{text-align:right}
+.sum{display:flex;gap:24px;margin:12px 0 18px;flex-wrap:wrap}.sum b{font-size:18px;display:block}.p{margin-top:16px}button{font:inherit;padding:8px 16px}
+@media print{.p{display:none}body{margin:0}}</style></head><body>
+<h1>${esc(e.name)}</h1><div>កាលបរិច្ឆេទ: ${new Date().toLocaleDateString("en-GB")} · អត្រា $1 = ${e.rate} ៛</div>
+<div class="sum"><div>សរុប<b>${usd(t)}</b></div><div>ទិញរួច<b>${usd(p)}</b></div><div>នៅសល់<b>${usd(t-p)}</b></div></div>
+<table><tr><th>ល.រ</th><th>មុខទំនិញ</th><th>ចំនួន</th><th>តម្លៃ</th><th>សរុប</th><th>✓</th></tr>${rows}
+<tr class="h"><td colspan="5">សរុបទាំងអស់ (ដុល្លារ)</td><td>${usd(t)}</td></tr></table>
+<div class="p"><button onclick="print()">🖨 ព្រីន</button></div>
+<script>window.onload=()=>setTimeout(()=>print(),600)<\/script></body></html>`}
+$("print").onclick=()=>{const w=window.open("","_blank");
+  if(!w){$("msg").textContent="សូមអនុញ្ញាត pop-up ដើម្បីព្រីន។";return}
+  w.document.open();w.document.write(printDoc(events[cur]));w.document.close()};
+
+/* ---------- boot ---------- */
+async function startData(){
+  show("home");$("evlist").innerHTML=`<p class="note">កំពុងផ្ទុក…</p>`;
+  try{const l=await getDoc(doc(fs,"users",uid,"settings","library"));lib=(l.data()||{}).cats||null}catch(e){lib=null}
+  if(!lib)lib=JSON.parse(JSON.stringify(DEFLIB));
+  if(unsub)unsub();
+  unsub=onSnapshot(collection(fs,"users",uid,"events"),snap=>{
+    const next={};snap.docs.forEach(s=>{const v=s.data();if(v)next[s.id]=JSON.parse(JSON.stringify(v))});
+    if(cur&&dirty&&events[cur])next[cur]=events[cur];
+    events=next;
+    $("storeNote").textContent="រក្សាទុកនៅលើ Firebase — ចូលពីឧបករណ៍ណាក៏បាន ដោយលេខទូរស័ព្ទ និងលេខកូដ។";
+    if(!$("home").hidden)renderHome();
+    else if(cur&&!events[cur]){cur=null;renderHome();show("home")}
+  },e=>{$("storeNote").textContent="ភ្ជាប់មិនបាន ("+(e.code||"")+") — ពិនិត្យ Firestore Rules។"});
+}
+await setPersistence(auth,browserSessionPersistence).catch(()=>{});
+onAuthStateChanged(auth,u=>{
+  if(!u)return leaveApp();
+  if(settingPin)return;
+  const hasPw=u.providerData.some(p=>p.providerId==="password");
+  if(!hasPw){settingPin=true;showForm("fPin");return}
+  enterApp(u);
+});
+</script>
+</body>
+</html>
