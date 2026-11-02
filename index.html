@@ -4,104 +4,168 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ថវិកាកម្មវិធី</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;700&family=Moul&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Moul&display=swap">
 <style>
-/* Layout: lock screen first, then one narrow column — event list as home, a ledger per event with a dollar summary band */
+/* Layout: phone-first single column. A maroon "envelope" card carries the title and the dollar total;
+   each section below is a white card holding its items as labelled rows. */
 :root{
-  --bg:#fbf7f4; --surface:#ffffff; --fg:#2a1a22; --muted:#7a6670; --line:#eaded8;
-  --accent:#7d1f3d; --gold:#b8862b; --good:#2f7a4b; --chip:#f4e9e4; --bad:#b3261e;
+  --bg:#f5eff1; --surface:#ffffff; --surface2:#faf6f7; --fg:#26161d; --muted:#6f5c64; --line:#e7dade;
+  --accent:#8a1c3f; --accent-2:#6d1431; --on-accent:#fff7f0; --gold:#c29233; --gold-soft:#f6ead2;
+  --good:#24834f; --good-soft:#e3f3ea; --bad:#b3261e; --shadow:0 1px 2px rgba(60,20,35,.06),0 4px 14px rgba(60,20,35,.06);
   --display:"Moul","Kantumruy Pro",serif; --body:"Kantumruy Pro",system-ui,sans-serif;
+  --r:14px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#1a1216; --surface:#241a1f; --fg:#f3e9ec; --muted:#b39fa8; --line:#3a2b32;
-  --accent:#e0809f; --gold:#e3b75e; --good:#6cc38f; --chip:#33252c; --bad:#ff8a80; color-scheme:dark}}
+  --bg:#150e11; --surface:#21171b; --surface2:#2a1e23; --fg:#f4eaee; --muted:#b9a5ad; --line:#3a2b31;
+  --accent:#a8294f; --accent-2:#7d1a39; --on-accent:#fff4ec; --gold:#e2b45a; --gold-soft:#3a2f1c;
+  --good:#5fc68c; --good-soft:#1d3327; --bad:#ff8a80; --shadow:none; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#1a1216; --surface:#241a1f; --fg:#f3e9ec; --muted:#b39fa8; --line:#3a2b32;
-  --accent:#e0809f; --gold:#e3b75e; --good:#6cc38f; --chip:#33252c; --bad:#ff8a80; color-scheme:dark}
+  --bg:#150e11; --surface:#21171b; --surface2:#2a1e23; --fg:#f4eaee; --muted:#b9a5ad; --line:#3a2b31;
+  --accent:#a8294f; --accent-2:#7d1a39; --on-accent:#fff4ec; --gold:#e2b45a; --gold-soft:#3a2f1c;
+  --good:#5fc68c; --good-soft:#1d3327; --bad:#ff8a80; --shadow:none; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0}
-img{max-width:100%}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
-.wrap{max-width:680px;margin:0 auto;display:grid;gap:18px}
-h1{font-family:var(--display);font-weight:400;font-size:1.3rem;color:var(--accent);margin:0;text-wrap:balance}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+.wrap{max-width:640px;margin:0 auto;display:grid;gap:16px}
+h1,h2{margin:0;text-wrap:balance}
+input,button{font:inherit;color:inherit}
+input[type=text],input[type=number],input[type=tel],input[type=password]{
+  background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;min-height:44px;min-width:0;width:100%}
+input::placeholder{color:var(--muted);opacity:.8}
+input:focus{border-color:var(--gold);outline:none}
+button{cursor:pointer;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 16px;min-height:44px;font-weight:600}
+button.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+button.ghost{background:transparent;border-color:transparent;color:var(--accent);padding-inline:8px}
+button.link{border:none;background:none;color:var(--accent);padding:4px 0;min-height:0;font-weight:500}
+button.danger{color:var(--bad)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .between{justify-content:space-between}
-select,input,button{font:inherit;color:inherit}
-input[type=text],input[type=number],input[type=tel],input[type=password]{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:0}
-button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px}
-button.pri{background:var(--accent);color:var(--bg);border-color:var(--accent)}
-button.link{border:none;background:none;color:var(--accent);padding:4px 0;text-decoration:underline}
-button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.lbl{font-size:.8rem;color:var(--muted)}
-.note{font-size:.82rem;color:var(--muted);margin:0}
-.err{color:var(--bad);font-size:.88rem;margin:0;min-height:1.4em}
-/* lock */
-.lock{max-width:360px;margin:8vh auto 0;display:grid;gap:14px;text-align:center}
-.lock form{display:grid;gap:10px;text-align:left}
-.lock label{display:grid;gap:4px;font-size:.88rem;color:var(--muted)}
-.lock input{font-size:1.1rem;padding:10px 12px;letter-spacing:.08em}
-.lock button.pri{padding:10px}
-.seal{width:64px;height:64px;margin:0 auto;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-family:var(--display);font-size:1.4rem}
-/* home list */
-.evlist{display:grid;gap:10px}
-.evcard{display:grid;grid-template-columns:1fr auto;gap:4px 12px;text-align:left;padding:14px 16px;border-radius:12px;background:var(--surface)}
-.evcard b{font-size:1.05rem}
-.evcard .amt{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);text-align:right}
-.evcard .sub{font-size:.8rem;color:var(--muted)}
-.empty{border:1px dashed var(--line);border-radius:12px;padding:20px;text-align:center;color:var(--muted);display:grid;gap:10px;justify-items:center}
-/* event summary */
-.sum{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
-.big{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);line-height:1.2}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.two b{font-variant-numeric:tabular-nums;font-size:1.05rem}
-.bar{height:8px;background:var(--chip);border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
-.rate{display:flex;gap:6px;align-items:center;font-size:.85rem;color:var(--muted)}
-.rate input{width:90px;text-align:right}
-.evname{font-size:1.15rem;font-weight:700;width:100%}
-/* ledger */
-.cat{display:grid;gap:2px}
-.cathead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:2px solid var(--gold);padding-bottom:4px}
-.cathead input{font-weight:700;border-color:transparent;background:transparent;padding:2px 0;flex:1}
-.cathead span{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
-.item{display:grid;grid-template-columns:26px 1fr 26px;gap:2px 6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-.item .nm{border-color:transparent;background:transparent;padding:2px 4px}
+.note{font-size:.88rem;color:var(--muted);margin:0}
+.err{color:var(--bad);font-size:.92rem;margin:0;min-height:1.5em}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- lock ---------- */
+.lock{max-width:380px;margin:6vh auto 0;display:grid;gap:18px}
+.lock-head{text-align:center;display:grid;gap:6px;justify-items:center}
+.seal{width:72px;height:72px;border-radius:50%;background:var(--accent);color:var(--gold);display:grid;place-items:center;
+  font-family:var(--display);font-size:1.6rem;box-shadow:0 0 0 4px var(--bg),0 0 0 6px var(--gold)}
+.lock-head h1{font-family:var(--display);font-weight:400;font-size:1.35rem;color:var(--accent);line-height:1.9}
+.lock form{display:grid;gap:14px;background:var(--surface);padding:20px;border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line)}
+.lock label{display:grid;gap:6px;font-size:.95rem;font-weight:600}
+.lock input{font-size:1.15rem;letter-spacing:.06em}
+.lock button.pri{min-height:50px;font-size:1.05rem}
+
+/* ---------- envelope (hero card) ---------- */
+.env{background:var(--accent);color:var(--on-accent);border-radius:18px;padding:18px;display:grid;gap:14px;position:relative;overflow:hidden}
+.env::after{content:"";position:absolute;inset:8px;border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);border-radius:12px;pointer-events:none}
+.env>*{position:relative;z-index:1}
+.env h1{font-family:var(--display);font-weight:400;font-size:1.2rem;line-height:1.9;color:var(--gold)}
+.env .lbl{font-size:.85rem;opacity:.85}
+.env .big{font-size:2.3rem;font-weight:700;line-height:1.15}
+.env .bar{height:10px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden}
+.env .bar i{display:block;height:100%;background:var(--gold);width:0;transition:width .35s}
+.env .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.env .two>div{background:rgba(255,255,255,.1);border-radius:10px;padding:8px 12px}
+.env .two b{font-size:1.15rem;display:block}
+.env button{background:rgba(255,255,255,.12);border-color:transparent;color:var(--on-accent)}
+.env .evname{background:transparent;border:1.5px dashed rgba(255,255,255,.35);color:var(--on-accent);font-size:1.25rem;font-weight:700}
+.env .evname:focus{border-style:solid;border-color:var(--gold)}
+.env .rate{display:flex;gap:8px;align-items:center;font-size:.9rem;flex-wrap:wrap}
+.riel{font-size:1.25em;line-height:1}
+.env .rate input{width:110px;min-height:38px;background:rgba(255,255,255,.12);border-color:transparent;color:var(--on-accent);text-align:right}
+.status{font-size:.82rem;opacity:.85}
+
+/* ---------- home ---------- */
+.evlist{display:grid;gap:12px}
+.evcard{display:grid;gap:8px;text-align:left;padding:16px;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);border:1px solid var(--line);font-weight:400}
+.evcard .top{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.evcard b{font-size:1.1rem}
+.evcard .amt{font-weight:700;color:var(--accent);font-size:1.15rem;white-space:nowrap}
+.evcard .sub{font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.minibar{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.minibar i{display:block;height:100%;background:var(--good)}
+.empty{background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r);padding:28px 20px;text-align:center;display:grid;gap:6px}
+.empty b{font-size:1.05rem}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions button{min-height:50px}
+
+/* ---------- sections ---------- */
+.cat{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line);overflow:hidden}
+.cathead{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--line)}
+.cathead input{font-weight:700;font-size:1.05rem;border-color:transparent;background:transparent;padding:4px 6px;min-height:40px;flex:1}
+.cathead input:focus{background:var(--surface);border-color:var(--gold)}
+.sub-pill{background:var(--gold-soft);color:var(--fg);border-radius:99px;padding:2px 12px;font-weight:700;white-space:nowrap;font-size:.95rem}
+.items{display:grid}
+.item{display:grid;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:none}
+.item.done{background:var(--good-soft)}
+.it-top{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.chk{width:28px;height:28px;accent-color:var(--good);margin:0}
+.item .nm{font-weight:600;border-color:transparent;background:transparent;padding:4px 6px;min-height:40px}
+.item .nm:focus{background:var(--surface);border-color:var(--gold)}
 .item.done .nm{text-decoration:line-through;color:var(--muted)}
-.item input[type=checkbox]{width:20px;height:20px;accent-color:var(--good)}
-.line2{grid-column:2/4;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.9rem;color:var(--muted)}
-.line2 input{width:60px;text-align:right;padding:3px 6px}
-.line2 .pr{width:96px}
-.cur{min-width:40px;padding:3px 8px;font-weight:700;background:var(--chip);border-color:transparent}
-.cur.khr{color:var(--gold)}
-.line2 .st{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--fg)}
-.del{border:none;background:none;color:var(--muted);padding:0;font-size:1.2rem;line-height:1}
-.add{justify-self:start;border-style:dashed;color:var(--accent);margin-top:6px}
+.icon-btn{width:40px;min-height:40px;padding:0;border:none;background:transparent;color:var(--muted);font-size:1.4rem;line-height:1;border-radius:8px}
+.icon-btn:hover{background:var(--surface2);color:var(--bad)}
+.it-fields{display:grid;grid-template-columns:72px 1fr auto;gap:8px;align-items:end;padding-left:36px}
+.fld{display:grid;gap:2px;font-size:.78rem;color:var(--muted);font-weight:500}
+.fld input{text-align:right;min-height:42px;padding:6px 10px;font-size:1rem;color:var(--fg)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;height:42px}
+.seg button{border:none;border-radius:0;min-height:0;height:100%;padding:0 14px;font-size:1.2rem;min-width:44px;background:var(--surface);color:var(--muted)}
+.seg button.on{background:var(--accent);color:var(--on-accent)}
+.it-total{padding-left:36px;display:flex;justify-content:space-between;font-size:.9rem;color:var(--muted)}
+.it-total b{color:var(--fg);font-size:1rem}
+.catfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.catfoot .add{border-style:dashed;color:var(--accent);background:transparent}
+.catfoot .link{color:var(--muted);font-size:.85rem}
+.catfoot .link.sure{color:var(--bad)}
+.cat-empty{padding:14px;color:var(--muted);font-size:.92rem;margin:0}
+
 /* picker */
-.picker{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;margin-top:6px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{background:var(--chip);border:1px solid transparent;border-radius:99px;padding:4px 12px;font-size:.9rem}
-.chip.on{border-color:var(--good);color:var(--good)}
+.picker{padding:14px;display:grid;gap:12px;background:var(--surface2);border-top:1px solid var(--line)}
+.picker .ph{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--surface);border:1.5px solid var(--line);border-radius:99px;padding:6px 14px;min-height:40px;font-weight:500}
+.chip.on{border-color:var(--good);background:var(--good-soft);color:var(--good);font-weight:700}
 .chip.on::before{content:"✓ "}
-.edrow{display:flex;gap:6px;align-items:center}
-.edrow input{flex:1}
-.confirm{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.9rem;background:var(--chip);padding:10px 12px;border-radius:10px}
-.status{font-size:.78rem;color:var(--muted)}
-@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+.addrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.edrow{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+
+.tpl{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;display:grid;gap:12px}
+.tpl-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.tpl-head b{font-size:1.05rem}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tcard{display:grid;gap:2px;text-align:left;padding:12px;border-radius:12px;background:var(--surface2);border:1.5px solid var(--line);font-weight:400;min-height:72px;align-content:start}
+.tcard b{font-size:1rem;line-height:1.5}
+.tcard span{font-size:.8rem;color:var(--muted)}
+.tcard:hover{border-color:var(--gold)}
+.tcard.blank{border-style:dashed;background:transparent}
+.tedit{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.addcat{display:grid;grid-template-columns:1fr auto;gap:8px}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tools .pri{grid-column:1/-1;min-height:50px;font-size:1.05rem}
+.confirm{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:var(--surface);border:1.5px solid var(--bad);padding:12px 14px;border-radius:var(--r)}
+.confirm .pri{background:var(--bad);border-color:var(--bad)}
+.toast{text-align:center}
+@media (max-width:380px){.it-fields{grid-template-columns:64px 1fr;padding-left:0}.it-fields .seg{grid-column:1/-1;justify-self:start}.it-total{padding-left:0}.env .big{font-size:2rem}}
+@media (prefers-reduced-motion:reduce){.env .bar i{transition:none}}
 </style>
 </head>
 <body>
 
 <!-- LOCK -->
 <section id="lock" class="lock">
-  <div class="seal">៛</div>
-  <h1>ថវិកាកម្មវិធី</h1>
-  <p class="note" id="lockLoading">កំពុងភ្ជាប់…</p>
+  <div class="lock-head">
+    <div class="seal">៛</div>
+    <h1>ថវិកាកម្មវិធី</h1>
+    <p class="note" id="lockLoading">កំពុងភ្ជាប់…</p>
+  </div>
 
   <form id="fLogin" hidden>
     <label>លេខទូរស័ព្ទ<input type="tel" id="liPhone" inputmode="tel" autocomplete="tel" placeholder="012 345 678" required></label>
-    <label>លេខកូដ<input type="password" id="liPin" inputmode="numeric" maxlength="6" autocomplete="current-password" required></label>
+    <label>លេខកូដ<input type="password" id="liPin" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="••••" required></label>
     <p class="err" id="liErr"></p>
     <button class="pri" type="submit">ចូល</button>
     <div class="row between"><button class="link" type="button" id="toRegister">ចុះឈ្មោះថ្មី</button><button class="link" type="button" id="toForgot">ភ្លេចលេខកូដ?</button></div>
@@ -110,9 +174,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
   <form id="fPhone" hidden>
     <p class="note" id="phTitle"></p>
     <label>លេខទូរស័ព្ទ<input type="tel" id="phPhone" inputmode="tel" autocomplete="tel" placeholder="012 345 678" required></label>
-    <label id="phCodeBox" hidden>លេខកូដ SMS (៦ ខ្ទង់)<input type="text" id="phCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+    <label id="phCodeBox" hidden>លេខកូដផ្ទៀងផ្ទាត់ (៦ ខ្ទង់)<input type="text" id="phCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
     <p class="err" id="phErr"></p>
-    <button class="pri" type="submit" id="phBtn">ផ្ញើលេខកូដ SMS</button>
+    <button class="pri" type="submit" id="phBtn">បន្ត</button>
     <button class="link" type="button" id="phBack">‹ ត្រឡប់ទៅចូល</button>
     <div id="recaptcha"></div>
   </form>
@@ -128,49 +192,50 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-o
 
 <div class="wrap" id="app" hidden>
   <!-- HOME -->
-  <section id="home" class="wrap" style="gap:14px">
-    <div class="row between"><h1>ថវិកាកម្មវិធី</h1><button id="logout">ចាកចេញ</button></div>
-    <div class="evlist" id="evlist"></div>
-    <div class="row">
-      <button class="pri" id="newWed">+ មង្គលការ (មានផ្នែកស្រាប់)</button>
-      <button id="newBlank">+ កម្មវិធីទទេ</button>
+  <section id="home" class="wrap">
+    <div class="env">
+      <div class="row between"><h1>ថវិកាកម្មវិធី</h1><button id="logout">ចាកចេញ</button></div>
+      <div><div class="lbl">កម្មវិធីទាំងអស់របស់អ្នក</div><div class="note" style="color:inherit;opacity:.85" id="homeSum"></div></div>
     </div>
-    <p class="note" id="storeNote"></p>
+    <button class="pri" id="newEv" style="min-height:52px;font-size:1.05rem">+ បង្កើតកម្មវិធីថ្មី</button>
+    <div class="tpl" id="tplBox" hidden></div>
+    <div class="evlist" id="evlist"></div>
+    <p class="note toast" id="storeNote"></p>
   </section>
 
   <!-- EVENT -->
   <section id="event" class="wrap" hidden>
-    <div class="row between">
-      <button id="back">‹ កម្មវិធីទាំងអស់</button>
-      <span class="status" id="st"></span>
-    </div>
-    <input type="text" class="evname" id="evName" aria-label="ឈ្មោះកម្មវិធី">
-    <div class="sum">
-      <div><div class="lbl">ចំណាយសរុប (គិតជាដុល្លារ)</div><div class="big" id="tot">$0</div></div>
+    <div class="env">
+      <div class="row between">
+        <button id="back">‹ ត្រឡប់</button>
+        <span class="status" id="st"></span>
+      </div>
+      <input type="text" class="evname" id="evName" aria-label="ឈ្មោះកម្មវិធី">
+      <div><div class="lbl">ចំណាយសរុប (ដុល្លារ)</div><div class="big num" id="tot">$0</div></div>
       <div class="bar"><i id="barFill"></i></div>
       <div class="two">
-        <div><div class="lbl">✓ ទិញរួច</div><b id="paid">$0</b></div>
-        <div><div class="lbl">នៅសល់ត្រូវទិញ</div><b id="left">$0</b></div>
+        <div><span class="lbl">✓ ទិញរួច</span><b class="num" id="paid">$0</b></div>
+        <div><span class="lbl">នៅសល់</span><b class="num" id="left">$0</b></div>
       </div>
-      <label class="rate" for="rate">អត្រា $1 = <input type="number" id="rate" min="1" inputmode="decimal"> ៛</label>
+      <label class="rate" for="rate">អត្រាប្តូរប្រាក់ $1 = <input type="number" id="rate" min="1" inputmode="decimal"> <span class="riel">៛</span></label>
     </div>
-    <p class="note">ចុច «+ រើសមុខទំនិញ» ក្នុងផ្នែកនីមួយៗ ដើម្បីរើសពីបញ្ជីស្រាប់ ឬបន្ថែម/កែ/លុបមុខទំនិញ។ ចុច <b>$</b> / <b>៛</b> ដើម្បីប្តូររូបិយប័ណ្ណ។</p>
     <div id="cats" class="wrap"></div>
-    <div class="row">
-      <input type="text" id="newCat" placeholder="បន្ថែមផ្នែកថ្មី" list="catNames">
-      <button id="addCat">+ ផ្នែក</button>
+    <div class="addcat">
+      <input type="text" id="newCat" placeholder="ឈ្មោះផ្នែកថ្មី ឧ. ដឹកជញ្ជូន" list="catNames">
+      <button id="addCat">+ បន្ថែមផ្នែក</button>
     </div>
     <datalist id="catNames"></datalist>
-    <div class="row">
+    <div class="tools">
       <button class="pri" id="print">🖨 ព្រីន</button>
       <button id="copy">ចម្លងសង្ខេប</button>
-      <button id="delEv">លុបកម្មវិធី</button>
+      <button id="saveTpl">☆ រក្សាទុកជាគំរូ</button>
+      <button id="delEv" class="danger" style="grid-column:1/-1">លុបកម្មវិធី</button>
     </div>
     <div class="confirm" id="delConfirm" hidden>
       <span>លុបកម្មវិធីនេះជារៀងរហូតមែនទេ?</span>
-      <button class="pri" id="delYes">លុប</button><button id="delNo">ទេ</button>
+      <div class="row"><button id="delNo">ទេ</button><button class="pri" id="delYes">លុប</button></div>
     </div>
-    <p class="note" id="msg"></p>
+    <p class="note toast" id="msg"></p>
   </section>
 </div>
 
@@ -197,11 +262,59 @@ const DEFLIB={
  "ពិធីសាសនា / សែនព្រេន":["ធូប","ទៀន","ផ្កាម្លិះ","ផ្កាឈូក","ស្លាធម៌","បាយសី","ពានស្លា","ទេយ្យទាន","ចង្ហាន់ព្រះសង្ឃ","បច្ច័យ","ទឹកអប់","កន្សែងស"],
  "ជំនូន":["ចេក","ក្រូច","ទំពាំងបាយជូរ","ផ្លែប៉ោម","ស្រកានាគ","នំអន្សម","នំគម","នំកន្សែង","ស្លាម្លូ","ស្រា","ភេសជ្ជៈ","មាន់","ជ្រូកខ្វៃ","ថាស ពាន","ក្រណាត់គ្របថាស"],
  "ពិធីចងដៃ":["អំបោះក្រហម","ខ្សែចងដៃ","ពពិល","ទៀនពពិល","ផ្កាស្លាបាច","ចិញ្ចៀន","គ្រឿងអលង្ការ"],
+ "ខោអាវ":["សម្លៀកបំពាក់កូនកំលោះ","សម្លៀកបំពាក់កូនក្រមុំ","ខោអាវបងតុលា","រ៉ូបបងតុលា","ស្បែកជើងកែង","កក់សម្លៀកបំពាក់បុរាណ","ជួលសម្លៀកបំពាក់"],
  "សម្លៀកបំពាក់ និងតុបតែង":["សម្លៀកបំពាក់កូនកំលោះ","សម្លៀកបំពាក់កូនក្រមុំ","ជួលសម្លៀកបំពាក់","តុបតែងមុខ","តុបតែងរោង","ផ្កាតុបតែង","ស្រោមអាំងប៉ាវ","ធៀបការ"],
  "ទទួលភ្ញៀវ":["អាហារ (តុ)","ភេសជ្ជៈ","ទឹកសុទ្ធ","ទឹកកក","ស្រាបៀរ","កាដូអរគុណភ្ញៀវ","ជួលតុ កៅអី","ជួលរោង","ភ្លេង តន្ត្រី","ថតរូប វីដេអូ","ពិធីករ"],
  "ចំណាយទូទៅ":["ដឹកជញ្ជូន","សាំង","ទឹក ភ្លើង","ផ្សេងៗ"]
 };
-const WEDCATS=["ពិធីសាសនា / សែនព្រេន","ជំនូន","ពិធីចងដៃ","សម្លៀកបំពាក់ និងតុបតែង","ទទួលភ្ញៀវ"];
+const tn=x=>typeof x==="string"?x:x.n, tq=x=>typeof x==="string"?1:(x.q||1);
+const TPLVER=2;
+const T=(n,cats)=>({n,cats:Object.entries(cats).map(([c,items])=>({n:c,items}))});
+const DEFTPL=[
+ T("មង្គលការ",{"ពិធីសាសនា / សែនព្រេន":["ធូប","ទៀន","ផ្កាម្លិះ","ស្លាធម៌","បាយសី","ទេយ្យទាន","ចង្ហាន់ព្រះសង្ឃ","បច្ច័យ"],
+   "ជំនូន":["ចេក","ក្រូច","ទំពាំងបាយជូរ","ផ្លែប៉ោម","នំអន្សម","នំគម","ស្លាម្លូ","ស្រា","ភេសជ្ជៈ","មាន់","ជ្រូកខ្វៃ","ថាស ពាន"],
+   "ពិធីចងដៃ":["អំបោះក្រហម","ពពិល","ទៀនពពិល","ផ្កាស្លាបាច","ចិញ្ចៀន","គ្រឿងអលង្ការ"],
+   "ខោអាវ":["សម្លៀកបំពាក់កូនកំលោះ","សម្លៀកបំពាក់កូនក្រមុំ",{n:"ខោអាវបងតុលា",q:3},"រ៉ូបបងតុលា",{n:"ស្បែកជើងកែង",q:1},"កក់សម្លៀកបំពាក់បុរាណ"],
+   "តុបតែង":["តុបតែងមុខ","តុបតែងរោង","ធៀបការ","ស្រោមអាំងប៉ាវ"],
+   "ទទួលភ្ញៀវ":["អាហារ (តុ)","ភេសជ្ជៈ","ទឹកសុទ្ធ","ទឹកកក","ស្រាបៀរ","ជួលតុ កៅអី","ជួលរោង","ភ្លេង តន្ត្រី","ថតរូប វីដេអូ","ពិធីករ","កាដូអរគុណភ្ញៀវ"]}),
+ T("ឡើងផ្ទះថ្មី",{"ពិធីសាសនា":["ធូប","ទៀន","ផ្កា","បាយសី","ស្លាធម៌","ទេយ្យទាន","ចង្ហាន់ព្រះសង្ឃ","បច្ច័យ","អំបោះចងដៃ"],
+   "សែនព្រេន":["ក្បាលជ្រូក","មាន់ស្ងោរ","ផ្លែឈើ","នំអន្សម","ស្រា","តែ"],
+   "ទទួលភ្ញៀវ":["អាហារ (តុ)","ភេសជ្ជៈ","ទឹកសុទ្ធ","ទឹកកក","ស្រាបៀរ","ជួលតុ កៅអី","ជួលរោង","ភ្លេង"],
+   "ចំណាយទូទៅ":["ដឹកជញ្ជូន","ផ្សេងៗ"]}),
+ T("បុណ្យកឋិន",{"គ្រឿងកឋិន":["ស្បង់ចីវរ","បាត្រ","ទេយ្យទាន","បច្ច័យ","ទៀន ធូប ផ្កា"],
+   "ចង្ហាន់":["ចង្ហាន់ព្រឹក","ចង្ហាន់ថ្ងៃត្រង់","ភេសជ្ជៈ","ផ្លែឈើ"],
+   "ហែកឋិន":["ជួលឡាន","ភ្លេងហែ","ទង់ជ័យ","អាវពណ៌"],
+   "ទទួលភ្ញៀវ":["អាហារ","ទឹកសុទ្ធ","ទឹកកក"]}),
+ T("ភ្ជុំបិណ្ឌ",{"វេនបិណ្ឌ":["បាយបិណ្ឌ","នំអន្សម","នំគម","ផ្លែឈើ","ទៀន ធូប"],
+   "ប្រគេនព្រះសង្ឃ":["ចង្ហាន់","ទេយ្យទាន","បច្ច័យ"],
+   "ធ្វើបុណ្យដូនតា":["សែនដូនតា","ម្ហូបសែន","ស្រា តែ"],
+   "ចំណាយទូទៅ":["ធ្វើដំណើរទៅស្រុក","កាដូឪពុកម្តាយ","ផ្សេងៗ"]}),
+ T("ចូលឆ្នាំខ្មែរ",{"ទទួលទេវតា":["ផ្លែឈើ","ផ្កា","ទៀន ធូប","ទឹកអប់","បាយសី","ភេសជ្ជៈ"],
+   "ធ្វើបុណ្យនៅវត្ត":["ចង្ហាន់","បច្ច័យ","ពូនភ្នំខ្សាច់"],
+   "ម្ហូប និងនំ":["នំអន្សម","នំគម","ម្ហូប","ភេសជ្ជៈ"],
+   "កម្សាន្ត":["ធ្វើដំណើរ","ល្បែងប្រជាប្រិយ","ផ្សេងៗ"]}),
+ T("ខួបកំណើត",{"អាហារ និងនំ":["នំខួបកំណើត","ម្ហូប","ភេសជ្ជៈ","ទឹកកក"],
+   "តុបតែង":["បាឡុង","ទៀនខួប","ផ្ទាំងផ្សាយ","ផ្កា"],
+   "ផ្សេងៗ":["កាដូ","ថតរូប","ជួលកន្លែង"]}),
+ T("បុណ្យសព / ខួប",{"ពិធីសាសនា":["ទៀន ធូប ផ្កា","ទេយ្យទាន","ចង្ហាន់ព្រះសង្ឃ","បច្ច័យ","ស្បង់ចីវរ"],
+   "ពិធីបុណ្យ":["មឈូស","ផ្កាកម្រង","រូបថត","ជួលរោង","ជួលតុ កៅអី","អាចារ្យ","ភ្លេងពិណពាទ្យ"],
+   "ទទួលភ្ញៀវ":["អាហារ","ទឹកសុទ្ធ","តែ កាហ្វេ","ទឹកកក"],
+   "ចំណាយទូទៅ":["ដឹកជញ្ជូន","ផ្សេងៗ"]}),
+ T("បុណ្យបួស",{"គ្រឿងបួស":["ស្បង់ចីវរ","បាត្រ","ទេយ្យទាន","ជើងទៀន"],
+   "ពិធីសាសនា":["ទៀន ធូប ផ្កា","បាយសី","ចង្ហាន់ព្រះសង្ឃ","បច្ច័យ"],
+   "ទទួលភ្ញៀវ":["អាហារ (តុ)","ភេសជ្ជៈ","ទឹកកក","ជួលរោង","ភ្លេង"]}),
+ T("ជប់លៀង / ទទួលភ្ញៀវ",{"អាហារ":["ម្ហូប","បាយ","បង្អែម","ផ្លែឈើ"],
+   "ភេសជ្ជៈ":["ស្រាបៀរ","ភេសជ្ជៈ","ទឹកសុទ្ធ","ទឹកកក"],
+   "ផ្សេងៗ":["ជួលតុ កៅអី","ភ្លេង","តុបតែង","ចានកែវ"]}),
+ T("បើកហាង / អាជីវកម្ម",{"ពិធីសាសនា":["ទៀន ធូប ផ្កា","បាយសី","ចង្ហាន់ព្រះសង្ឃ","បច្ច័យ","សែនព្រេន"],
+   "តុបតែង":["ផ្ទាំងផ្សាយ","ផ្កាកម្រង","បាឡុង","ស្លាក"],
+   "ទទួលភ្ញៀវ":["អាហារ","ភេសជ្ជៈ","ទឹកកក","កាដូភ្ញៀវ"],
+   "ផ្សព្វផ្សាយ":["ផ្សាយពាណិជ្ជកម្ម Facebook","ខិត្តប័ណ្ណ","ប្រូម៉ូសិន"]})
+];
+let tpls=null, tplEdit=false;
+let tplSaving=Promise.resolve();
+function saveTpls(){const snap=JSON.parse(JSON.stringify(tpls));
+  tplSaving=tplSaving.then(()=>setDoc(doc(fs,"users",uid,"settings","templates"),{list:snap,ver:TPLVER})).catch(()=>{})}
 const blankItem=(n="")=>({n,q:1,p:0,c:"usd",d:false});
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
@@ -239,14 +352,14 @@ function showForm(id){["fLogin","fPhone","fPin"].forEach(f=>$(f).hidden=f!==id);
 function errKm(e){const c=e&&e.code||"";
   if(/invalid-credential|wrong-password|user-not-found|invalid-email/.test(c))return "លេខទូរស័ព្ទ ឬលេខកូដមិនត្រឹមត្រូវ";
   if(/too-many-requests/.test(c))return "ព្យាយាមច្រើនដងពេក — សូមរង់ចាំបន្តិចសិន";
-  if(/invalid-verification-code|code-expired/.test(c))return "លេខកូដ SMS មិនត្រឹមត្រូវ ឬផុតកំណត់";
+  if(/invalid-verification-code|code-expired/.test(c))return "លេខកូដផ្ទៀងផ្ទាត់មិនត្រឹមត្រូវ";
   if(/invalid-phone-number/.test(c))return "លេខទូរស័ព្ទមិនត្រឹមត្រូវ";
-  if(/billing-not-enabled|operation-not-allowed|quota-exceeded/.test(c))return "ការផ្ញើ SMS មិនទាន់បើកក្នុង Firebase ("+c+")";
+  if(/billing-not-enabled|operation-not-allowed|quota-exceeded/.test(c))return "លេខទូរស័ព្ទនេះមិនទាន់បានអនុញ្ញាត — សូមបន្ថែមវាក្នុង Firebase › Phone numbers for testing";
   if(/network/.test(c))return "គ្មានអ៊ីនធឺណិត";
   return "មានបញ្ហា ("+(c||e.message)+")"}
 function openPhone(mode){phoneMode=mode;confirmRes=null;
-  $("phTitle").textContent=mode==="register"?"ចុះឈ្មោះ — យើងនឹងផ្ញើលេខកូដ SMS ទៅលេខទូរស័ព្ទរបស់អ្នក":"ភ្លេចលេខកូដ — បញ្ចូលលេខទូរស័ព្ទដែលបានចុះឈ្មោះ ដើម្បីទទួល SMS";
-  $("phPhone").disabled=false;$("phCodeBox").hidden=true;$("phCode").value="";$("phErr").textContent="";$("phBtn").textContent="ផ្ញើលេខកូដ SMS";
+  $("phTitle").textContent=mode==="register"?"ចុះឈ្មោះ — បញ្ចូលលេខទូរស័ព្ទ រួចបញ្ចូលលេខកូដផ្ទៀងផ្ទាត់ ៦ ខ្ទង់":"ភ្លេចលេខកូដ — បញ្ចូលលេខទូរស័ព្ទដែលបានចុះឈ្មោះ រួចបញ្ចូលលេខកូដផ្ទៀងផ្ទាត់ ៦ ខ្ទង់";
+  $("phPhone").disabled=false;$("phCodeBox").hidden=true;$("phCode").value="";$("phErr").textContent="";$("phBtn").textContent="បន្ត";
   $("phPhone").value=$("liPhone").value;showForm("fPhone")}
 $("toRegister").onclick=()=>openPhone("register");
 $("toForgot").onclick=()=>openPhone("forgot");
@@ -260,12 +373,12 @@ $("fLogin").onsubmit=async ev=>{ev.preventDefault();const ph=e164($("liPhone").v
 $("fPhone").onsubmit=async ev=>{ev.preventDefault();$("phErr").textContent="";
   if(!confirmRes){const ph=e164($("phPhone").value);if(!ph)return $("phErr").textContent="លេខទូរស័ព្ទមិនត្រឹមត្រូវ";
     try{if(!verifier)verifier=new RecaptchaVerifier(auth,"recaptcha",{size:"invisible"});
-      $("phBtn").disabled=true;$("phErr").textContent="កំពុងផ្ញើ…";
+      $("phBtn").disabled=true;$("phErr").textContent="សូមរង់ចាំ…";
       confirmRes=await signInWithPhoneNumber(auth,ph,verifier);
       $("phErr").textContent="";$("phPhone").disabled=true;$("phCodeBox").hidden=false;$("phBtn").textContent="បញ្ជាក់";$("phCode").focus()}
     catch(e){$("phErr").textContent=errKm(e);try{verifier&&verifier.clear()}catch(_){};verifier=null}
     $("phBtn").disabled=false;return}
-  const code=$("phCode").value.trim();if(!/^\d{6}$/.test(code))return $("phErr").textContent="សូមបញ្ចូលលេខកូដ SMS ៦ ខ្ទង់";
+  const code=$("phCode").value.trim();if(!/^\d{6}$/.test(code))return $("phErr").textContent="សូមបញ្ចូលលេខកូដផ្ទៀងផ្ទាត់ ៦ ខ្ទង់";
   settingPin=true;
   try{await confirmRes.confirm(code);$("pnPin").value="";$("pnPin2").value="";$("pnErr").textContent="";showForm("fPin")}
   catch(e){settingPin=false;$("phErr").textContent=errKm(e)}};
@@ -288,21 +401,48 @@ function leaveApp(){if(unsub){unsub();unsub=null}uid=null;events={};cur=null;
 function renderHome(){
   const ids=Object.keys(events).sort((a,b)=>(events[b].updated||0)-(events[a].updated||0));
   const L=$("evlist");
-  if(!ids.length){L.innerHTML=`<div class="empty"><span>មិនទាន់មានកម្មវិធីទេ</span><span class="note">ចុច «+ មង្គលការ» ឬ «+ កម្មវិធីទទេ» ខាងក្រោម ដើម្បីចាប់ផ្តើម</span></div>`;return}
+  $("homeSum").textContent=ids.length?`${ids.length} កម្មវិធី`:"";
+  if(!ids.length){L.innerHTML=`<div class="empty"><b>មិនទាន់មានកម្មវិធីទេ</b><span class="note">ចុច «+ បង្កើតកម្មវិធីថ្មី» រួចរើសប្រភេទកម្មវិធី — ផ្នែក និងមុខទំនិញនឹងបំពេញឱ្យដោយស្វ័យប្រវត្តិ</span></div>`;return}
   L.innerHTML="";
   ids.forEach(id=>{const e=events[id],{t,p}=totals(e),n=e.cats.reduce((a,c)=>a+c.items.length,0);
     const b=document.createElement("button");b.className="evcard";
-    b.innerHTML=`<b>${esc(e.name)||"គ្មានឈ្មោះ"}</b><span class="amt">${usd(t)}</span>
-      <span class="sub">${n} មុខ · ទិញរួច ${usd(p)}</span><span class="sub">${e.updated?new Date(e.updated).toLocaleDateString("en-GB"):""}</span>`;
+    b.innerHTML=`<div class="top"><b>${esc(e.name)||"គ្មានឈ្មោះ"}</b><span class="amt num">${usd(t)}</span></div>
+      <div class="minibar"><i style="width:${t?p/t*100:0}%"></i></div>
+      <div class="sub"><span>${n} មុខ · ទិញរួច <span class="num">${usd(p)}</span></span><span class="num">${e.updated?new Date(e.updated).toLocaleDateString("en-GB"):""}</span></div>`;
     b.onclick=()=>open(id);L.appendChild(b)});
 }
 function show(view){$("home").hidden=view!=="home";$("event").hidden=view!=="event";window.scrollTo(0,0)}
 function open(id){cur=id;openPicker=null;editLib=false;$("delConfirm").hidden=true;$("msg").textContent="";renderEvent();show("event")}
-function create(wed){
+function create(t){
   const id="e"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-  events[id]=wed?{name:"មង្គលការ",rate:4100,cats:WEDCATS.map(n=>({n,items:[]}))}
-               :{name:"កម្មវិធីថ្មី",rate:4100,cats:[{n:"ចំណាយទូទៅ",items:[]}]};
-  cur=id;queueSave();open(id);openPicker=0;renderEvent();
+  if(t){let libChanged=false;
+    t.cats.forEach(c=>{const L=libFor(c.n);c.items.forEach(x=>{const n=tn(x);if(!L.includes(n)){L.push(n);libChanged=true}})});
+    if(libChanged)saveLib()}
+  events[id]=t?{name:t.n,rate:4100,cats:t.cats.map(c=>({n:c.n,items:c.items.map(x=>({...blankItem(tn(x)),q:tq(x)}))}))}
+              :{name:"កម្មវិធីថ្មី",rate:4100,cats:[{n:"ចំណាយទូទៅ",items:[]}]};
+  $("tplBox").hidden=true;tplEdit=false;
+  cur=id;queueSave();open(id);if(!t){openPicker=0;renderEvent()}
+}
+function renderTpl(){
+  const B=$("tplBox");
+  if(!tplEdit){
+    B.innerHTML=`<div class="tpl-head"><b>រើសប្រភេទកម្មវិធី</b><div class="row"><button class="link" id="tplEditBtn">✎ កែគំរូ</button><button class="link" id="tplClose">បិទ</button></div></div>
+      <p class="note">ផ្នែក និងមុខទំនិញនឹងបំពេញឱ្យដោយស្វ័យប្រវត្តិ — អាចកែ ឬលុបបានក្រោយ</p>
+      <div class="tpl-grid">${tpls.map((t,k)=>`<button class="tcard" data-k="${k}"><b>${esc(t.n)}</b><span>${t.cats.length} ផ្នែក · ${t.cats.reduce((a,c)=>a+c.items.length,0)} មុខ</span></button>`).join("")}
+      <button class="tcard blank" data-k="-1"><b>+ កម្មវិធីទទេ</b><span>ចាប់ផ្តើមពីសូន្យ</span></button></div>`;
+    B.querySelectorAll(".tcard").forEach(b=>b.onclick=()=>create(+b.dataset.k>=0?tpls[+b.dataset.k]:null));
+    $("tplEditBtn").onclick=()=>{tplEdit=true;renderTpl()};
+  }else{
+    B.innerHTML=`<div class="tpl-head"><b>កែ / លុបគំរូកម្មវិធី</b><button class="pri" id="tplDone">រួចរាល់</button></div>
+      <p class="note">ដើម្បីកែផ្នែក ឬមុខទំនិញក្នុងគំរូ៖ បង្កើតកម្មវិធីពីគំរូនោះ កែតាមចិត្ត រួចចុច «☆ រក្សាទុកជាគំរូ»</p>
+      ${tpls.map((t,k)=>`<div class="tedit"><input type="text" id="tpl${k}" value="${esc(t.n)}" aria-label="ឈ្មោះគំរូ"><button class="icon-btn" data-k="${k}" aria-label="លុបគំរូ">×</button></div>`).join("")||`<p class="note">មិនមានគំរូទេ</p>`}
+      <button class="link" id="tplReset">↺ យកគំរូដើមមកវិញ</button>`;
+    B.querySelectorAll(".tedit input").forEach((inp,k)=>inp.onchange=()=>{const v=inp.value.trim();if(v){tpls[k].n=v;saveTpls()}});
+    B.querySelectorAll(".tedit .icon-btn").forEach(b=>b.onclick=()=>{tpls.splice(+b.dataset.k,1);saveTpls();renderTpl()});
+    $("tplReset").onclick=()=>{const have=new Set(tpls.map(t=>t.n));DEFTPL.forEach(t=>{if(!have.has(t.n))tpls.push(JSON.parse(JSON.stringify(t)))});saveTpls();renderTpl()};
+    $("tplDone").onclick=()=>{tplEdit=false;renderTpl()};
+  }
+  const c=$("tplClose");if(c)c.onclick=()=>{B.hidden=true};
 }
 
 /* ---------- event ---------- */
@@ -310,15 +450,15 @@ function updSum(){
   const e=events[cur],{t,p}=totals(e);
   $("tot").textContent=usd(t);$("paid").textContent=usd(p);$("left").textContent=usd(t-p);
   $("barFill").style.width=(t?p/t*100:0)+"%";
-  document.querySelectorAll("#cats .cathead span").forEach((s,ci)=>s.textContent=usd(e.cats[ci].items.reduce((a,i)=>a+toUsd(i,e.rate),0)));
+  document.querySelectorAll("#cats .sub-pill").forEach((s,ci)=>s.textContent=usd(e.cats[ci].items.reduce((a,i)=>a+toUsd(i,e.rate),0)));
   document.querySelectorAll("#cats .st").forEach(s=>{const [ci,ii]=s.dataset.k.split("_");const i=e.cats[ci].items[ii];
-    const v=(+i.q||0)*(+i.p||0);s.textContent=i.c==="khr"?khr(v):usd(v)});
+    const v=(+i.q||0)*(+i.p||0);s.textContent=i.c==="khr"?`${khr(v)}  (≈ ${usd(v/(+e.rate||4100))})`:usd(v)});
 }
 function picker(c,ci){
   const box=document.createElement("div");box.className="picker";
   const L=libFor(c.n), have=new Set(c.items.map(i=>i.n));
   if(!editLib){
-    box.innerHTML=`<div class="row between"><span class="lbl">ចុចរើសមុខទំនិញ (រើសបានច្រើន)</span><button class="link" data-a="edit">កែ / លុបបញ្ជី</button></div>
+    box.innerHTML=`<div class="ph"><span>ចុចរើសមុខទំនិញ (រើសបានច្រើន)</span><button class="link" data-a="edit">✎ កែ / លុបបញ្ជី</button></div>
       <div class="chips">${L.length?L.map((n,k)=>`<button class="chip${have.has(n)?" on":""}" data-k="${k}">${esc(n)}</button>`).join(""):`<span class="note">មិនទាន់មានមុខទំនិញក្នុងបញ្ជីផ្នែកនេះ — បន្ថែមខាងក្រោម</span>`}</div>`;
     box.querySelectorAll(".chip").forEach(ch=>ch.onclick=()=>{const n=L[ch.dataset.k];
       const ix=c.items.findIndex(i=>i.n===n);
@@ -326,14 +466,14 @@ function picker(c,ci){
       else c.items.push(blankItem(n));
       renderEvent();queueSave()});
   }else{
-    box.innerHTML=`<div class="row between"><span class="lbl">កែឈ្មោះ ឬលុបមុខទំនិញពីបញ្ជីផ្នែកនេះ</span><button class="pri" data-a="done">រួចរាល់</button></div>
-      ${L.map((n,k)=>`<div class="edrow"><input type="text" id="lib${ci}_${k}" value="${esc(n)}" aria-label="ឈ្មោះមុខទំនិញ"><button class="del" data-k="${k}" aria-label="លុបពីបញ្ជី">×</button></div>`).join("")||`<span class="note">បញ្ជីទទេ</span>`}`;
+    box.innerHTML=`<div class="ph"><span>កែឈ្មោះ ឬលុបមុខទំនិញពីបញ្ជី</span><button class="pri" data-a="done">រួចរាល់</button></div>
+      ${L.map((n,k)=>`<div class="edrow"><input type="text" id="lib${ci}_${k}" value="${esc(n)}" aria-label="ឈ្មោះមុខទំនិញ"><button class="icon-btn del" data-k="${k}" aria-label="លុបពីបញ្ជី">×</button></div>`).join("")||`<span class="note">បញ្ជីទទេ</span>`}`;
     box.querySelectorAll(".edrow input").forEach((inp,k)=>inp.onchange=()=>{const v=inp.value.trim(),old=L[k];if(!v||v===old)return;
       L[k]=v;c.items.forEach(i=>{if(i.n===old)i.n=v});saveLib();renderEvent();queueSave()});
     box.querySelectorAll(".del").forEach(b=>b.onclick=()=>{L.splice(+b.dataset.k,1);saveLib();renderEvent()});
   }
-  const addRow=document.createElement("div");addRow.className="row";
-  addRow.innerHTML=`<input type="text" id="newItem${ci}" placeholder="មុខទំនិញថ្មី" style="flex:1"><button data-a="add">+ បន្ថែម</button>`;
+  const addRow=document.createElement("div");addRow.className="addrow";
+  addRow.innerHTML=`<input type="text" id="newItem${ci}" placeholder="វាយមុខទំនិញថ្មី…"><button data-a="add">+ បន្ថែម</button>`;
   box.appendChild(addRow);
   const inp=addRow.querySelector("input"),add=()=>{const v=inp.value.trim();if(!v)return;
     if(!L.includes(v)){L.push(v);saveLib()}
@@ -342,7 +482,7 @@ function picker(c,ci){
   addRow.querySelector("button").onclick=add;inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();add()}};
   const ed=box.querySelector('[data-a="edit"]');if(ed)ed.onclick=()=>{editLib=true;renderEvent()};
   const dn=box.querySelector('[data-a="done"]');if(dn)dn.onclick=()=>{editLib=false;renderEvent()};
-  const close=document.createElement("button");close.className="link";close.textContent="បិទ";close.style.justifySelf="start";
+  const close=document.createElement("button");close.textContent="✓ រួចរាល់";close.style.justifySelf="stretch";
   close.onclick=()=>{openPicker=null;editLib=false;renderEvent()};box.appendChild(close);
   return box;
 }
@@ -354,35 +494,45 @@ function renderEvent(){
   const y=window.scrollY,box=$("cats");box.innerHTML="";
   e.cats.forEach((c,ci)=>{
     const d=document.createElement("section");d.className="cat";
-    d.innerHTML=`<div class="cathead"><input type="text" id="c${ci}" value="${esc(c.n)}" aria-label="ឈ្មោះផ្នែក"><span></span></div>`;
+    d.innerHTML=`<div class="cathead"><input type="text" id="c${ci}" value="${esc(c.n)}" aria-label="ឈ្មោះផ្នែក"><span class="sub-pill num"></span></div>`;
     d.querySelector("input").onchange=ev=>{const v=ev.target.value.trim()||c.n;if(v!==c.n&&!lib[v]){lib[v]=libFor(c.n).slice();saveLib()}c.n=v;renderEvent();queueSave()};
     const dl=document.createElement("datalist");dl.id="dl"+ci;dl.innerHTML=libFor(c.n).map(n=>`<option value="${esc(n)}">`).join("");d.appendChild(dl);
+    const list=document.createElement("div");list.className="items";
+    if(!c.items.length&&openPicker!==ci)list.innerHTML=`<p class="cat-empty">មិនទាន់មានមុខទំនិញ — ចុច «+ រើសមុខទំនិញ» ខាងក្រោម</p>`;
     c.items.forEach((it,ii)=>{
       const r=document.createElement("div");r.className="item"+(it.d?" done":"");
-      r.innerHTML=`<input type="checkbox" id="d${ci}_${ii}" aria-label="ទិញរួច"${it.d?" checked":""}>
-        <input type="text" class="nm" id="n${ci}_${ii}" list="dl${ci}" value="${esc(it.n)}" placeholder="មុខទំនិញ" aria-label="មុខទំនិញ">
-        <button class="del" aria-label="លុបមុខនេះ">×</button>
-        <div class="line2"><input type="number" id="q${ci}_${ii}" min="0" step="any" inputmode="decimal" value="${it.q}" aria-label="ចំនួន">
-        <span>×</span><input type="number" class="pr" id="p${ci}_${ii}" min="0" step="any" inputmode="decimal" value="${it.p||""}" placeholder="តម្លៃ" aria-label="តម្លៃមួយ">
-        <button class="cur ${it.c}" aria-label="ប្តូររូបិយប័ណ្ណ">${it.c==="khr"?"៛":"$"}</button>
-        <span class="st" data-k="${ci}_${ii}"></span></div>`;
-      const [cb,nm,del,l2]=r.children,[q,,p,cu]=l2.children;
+      r.innerHTML=`<div class="it-top">
+          <input type="checkbox" class="chk" id="d${ci}_${ii}" aria-label="ទិញរួច"${it.d?" checked":""}>
+          <input type="text" class="nm" id="n${ci}_${ii}" list="dl${ci}" value="${esc(it.n)}" placeholder="ឈ្មោះមុខទំនិញ" aria-label="មុខទំនិញ">
+          <button class="icon-btn del" aria-label="លុបមុខនេះ">×</button></div>
+        <div class="it-fields">
+          <label class="fld">ចំនួន<input type="number" class="q" id="q${ci}_${ii}" min="0" step="any" inputmode="decimal" value="${it.q}"></label>
+          <label class="fld">តម្លៃមួយ<input type="number" class="p" id="p${ci}_${ii}" min="0" step="any" inputmode="decimal" value="${it.p||""}" placeholder="0"></label>
+          <div class="seg" role="group" aria-label="រូបិយប័ណ្ណ"><button type="button" data-c="usd" class="${it.c!=="khr"?"on":""}">$</button><button type="button" data-c="khr" class="${it.c==="khr"?"on":""}">៛</button></div>
+        </div>
+        <div class="it-total"><span>សរុប</span><b class="st num" data-k="${ci}_${ii}"></b></div>`;
+      const cb=r.querySelector(".chk"),nm=r.querySelector(".nm"),q=r.querySelector(".q"),p=r.querySelector(".p");
       cb.onchange=()=>{it.d=cb.checked;r.classList.toggle("done",it.d);updSum();queueSave()};
       nm.oninput=()=>{it.n=nm.value;queueSave()};
       nm.onchange=()=>{const v=nm.value.trim();if(v&&!libFor(c.n).includes(v)){libFor(c.n).push(v);saveLib()}};
       q.oninput=()=>{it.q=q.value;updSum();queueSave()};
       p.oninput=()=>{it.p=p.value;updSum();queueSave()};
-      cu.onclick=()=>{it.c=it.c==="khr"?"usd":"khr";cu.textContent=it.c==="khr"?"៛":"$";cu.className="cur "+it.c;updSum();queueSave()};
-      del.onclick=()=>{c.items.splice(ii,1);renderEvent();queueSave()};
-      d.appendChild(r);
+      r.querySelectorAll(".seg button").forEach(bt=>bt.onclick=()=>{it.c=bt.dataset.c;
+        r.querySelectorAll(".seg button").forEach(x=>x.classList.toggle("on",x===bt));updSum();queueSave()});
+      r.querySelector(".del").onclick=()=>{c.items.splice(ii,1);renderEvent();queueSave()};
+      list.appendChild(r);
     });
+    d.appendChild(list);
     if(openPicker===ci)d.appendChild(picker(c,ci));
-    else{const a=document.createElement("button");a.className="add";a.textContent="+ រើសមុខទំនិញ";
-      a.onclick=()=>{openPicker=ci;editLib=false;renderEvent()};d.appendChild(a)}
-    const rm=document.createElement("button");rm.className="link";rm.style.cssText="justify-self:end;font-size:.8rem;color:var(--muted)";
-    rm.textContent="លុបផ្នែកនេះ";rm.onclick=()=>{if(c.items.length&&rm.dataset.sure!=="1"){rm.dataset.sure="1";rm.textContent="ចុចម្តងទៀតដើម្បីលុបផ្នែក និងមុខទំនិញទាំងអស់";return}
-      e.cats.splice(ci,1);openPicker=null;renderEvent();queueSave()};
-    d.appendChild(rm);
+    else{
+      const f=document.createElement("div");f.className="catfoot";
+      const a=document.createElement("button");a.className="add";a.textContent="+ រើសមុខទំនិញ";
+      a.onclick=()=>{openPicker=ci;editLib=false;renderEvent()};
+      const rm=document.createElement("button");rm.className="link";rm.textContent="លុបផ្នែកនេះ";
+      rm.onclick=()=>{if(c.items.length&&rm.dataset.sure!=="1"){rm.dataset.sure="1";rm.classList.add("sure");rm.textContent="ចុចម្តងទៀតដើម្បីលុបផ្នែកនេះ";return}
+        e.cats.splice(ci,1);openPicker=null;renderEvent();queueSave()};
+      f.append(a,rm);d.appendChild(f);
+    }
     box.appendChild(d);
   });
   updSum();window.scrollTo(0,y);
@@ -392,8 +542,12 @@ $("rate").oninput=ev=>{events[cur].rate=+ev.target.value||4100;updSum();queueSav
 $("addCat").onclick=()=>{const n=$("newCat").value.trim();if(!n)return;const e=events[cur];e.cats.push({n,items:[]});libFor(n);
   $("newCat").value="";openPicker=e.cats.length-1;editLib=false;renderEvent();queueSave()};
 $("back").onclick=async()=>{clearTimeout(saveT);if(dirty)await flush();renderHome();show("home")};
-$("newWed").onclick=()=>create(true);
-$("newBlank").onclick=()=>create(false);
+$("newEv").onclick=()=>{const B=$("tplBox");if(!B.hidden){B.hidden=true;return}tplEdit=false;renderTpl();B.hidden=false;B.scrollIntoView({behavior:"smooth",block:"nearest"})};
+$("saveTpl").onclick=()=>{const e=events[cur];const name=(e.name||"").trim()||"គំរូថ្មី";
+  const t={n:name,cats:e.cats.map(c=>({n:c.n,items:c.items.filter(i=>i.n.trim()).map(i=>(+i.q||1)>1?{n:i.n.trim(),q:+i.q}:i.n.trim())}))};
+  const ix=tpls.findIndex(x=>x.n===name);
+  if(ix>=0)tpls[ix]=t;else tpls.push(t);
+  saveTpls();$("msg").textContent=ix>=0?`បានធ្វើបច្ចុប្បន្នភាពគំរូ «${name}»`:`បានរក្សាទុកគំរូ «${name}» — រើសវាបានពេលបង្កើតកម្មវិធីថ្មី`};
 $("delEv").onclick=()=>{$("delConfirm").hidden=false};
 $("delNo").onclick=()=>{$("delConfirm").hidden=true};
 $("delYes").onclick=async()=>{const id=cur;clearTimeout(saveT);dirty=false;delete events[id];cur=null;
@@ -433,8 +587,15 @@ $("print").onclick=()=>{const w=window.open("","_blank");
 /* ---------- boot ---------- */
 async function startData(){
   show("home");$("evlist").innerHTML=`<p class="note">កំពុងផ្ទុក…</p>`;
-  try{const l=await getDoc(doc(fs,"users",uid,"settings","library"));lib=(l.data()||{}).cats||null}catch(e){lib=null}
+  try{const [l,t]=await Promise.all([getDoc(doc(fs,"users",uid,"settings","library")),getDoc(doc(fs,"users",uid,"settings","templates"))]);
+    lib=(l.data()||{}).cats||null;tpls=(t.data()||{}).list||null;var tplVer=(t.data()||{}).ver||1}catch(e){lib=null;tpls=null}
   if(!lib)lib=JSON.parse(JSON.stringify(DEFLIB));
+  if(!tpls){tpls=JSON.parse(JSON.stringify(DEFTPL));saveTpls()}
+  else if(tplVer<TPLVER){ // add the new clothing section to an existing wedding template
+    const w=tpls.find(t=>t.n==="មង្គលការ"),def=DEFTPL[0].cats.find(c=>c.n==="ខោអាវ");
+    if(w&&!w.cats.some(c=>c.n==="ខោអាវ"))w.cats.splice(Math.min(3,w.cats.length),0,JSON.parse(JSON.stringify(def)));
+    saveTpls()}
+  ["ខោអាវបងតុលា","រ៉ូបបងតុលា","ស្បែកជើងកែង","កក់សម្លៀកបំពាក់បុរាណ"].forEach(n=>{const L=libFor("ខោអាវ");if(!L.includes(n))L.push(n)});
   if(unsub)unsub();
   unsub=onSnapshot(collection(fs,"users",uid,"events"),snap=>{
     const next={};snap.docs.forEach(s=>{const v=s.data();if(v)next[s.id]=JSON.parse(JSON.stringify(v))});
